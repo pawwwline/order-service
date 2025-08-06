@@ -1,55 +1,24 @@
 package domain
 
-import "time"
+import (
+	"errors"
+	"fmt"
+	"time"
+)
+
+var (
+	ErrMissingRequiredField = errors.New("missing required field")
+	ErrValueBelowZero       = errors.New("value below zero")
+	ErrInvalidState         = errors.New("invalid domain state")
+)
 
 type Order struct {
-	OrderUID    string
-	TrackNumber string
-	Entry       string
-	Delivery    Delivery
-	Payment     Payment
-	Items       []Item
-	Meta        Meta
-}
-
-type Delivery struct {
-	Name    string
-	Phone   string
-	Zip     string
-	City    string
-	Address string
-	Region  string
-	Email   string
-}
-
-type Payment struct {
-	Transaction  string
-	RequestID    string
-	Currency     string
-	Provider     string
-	Amount       int
-	PaymentDt    int
-	Bank         string
-	DeliveryCost int
-	GoodsTotal   int
-	CustomFee    int
-}
-
-type Item struct {
-	ChrtID      int
-	TrackNumber string
-	Price       int
-	Rid         string
-	Name        string
-	Sale        int
-	Size        string
-	TotalPrice  int
-	NmID        int
-	Brand       string
-	Status      int
-}
-
-type Meta struct {
+	OrderUID          string
+	TrackNumber       string
+	Entry             string
+	Delivery          *Delivery
+	Payment           *Payment
+	Items             []Item
 	Locale            string
 	InternalSignature string
 	CustomerID        string
@@ -58,4 +27,74 @@ type Meta struct {
 	SmID              int
 	DateCreated       time.Time
 	OofShard          string
+}
+
+type OrderParams struct {
+	OrderUID          string
+	TrackNumber       string
+	Entry             string
+	Delivery          DeliveryParams
+	Payment           PaymentParams
+	Items             []ItemParams
+	Locale            string
+	InternalSignature string
+	CustomerID        string
+	DeliveryService   string
+	Shardkey          string
+	SmID              int
+	DateCreated       time.Time
+	OofShard          string
+}
+
+func NewOrder(p OrderParams) (*Order, error) {
+	err := validateOrder(p)
+	if err != nil {
+		return nil, err
+	}
+	delivery, err := NewDelivery(p.Delivery)
+	if err != nil {
+		return nil, err
+	}
+	payment, err := NewPayment(p.Payment)
+	if err != nil {
+		return nil, err
+	}
+	items, err := NewItemList(p.Items)
+	if err != nil {
+		return nil, err
+	}
+	return &Order{
+		OrderUID:          p.OrderUID,
+		TrackNumber:       p.TrackNumber,
+		Entry:             p.Entry,
+		Delivery:          delivery,
+		Payment:           payment,
+		Items:             items,
+		Locale:            p.Locale,
+		InternalSignature: p.InternalSignature,
+		CustomerID:        p.CustomerID,
+		DeliveryService:   p.DeliveryService,
+		Shardkey:          p.Shardkey,
+		SmID:              p.SmID,
+		DateCreated:       p.DateCreated,
+		OofShard:          p.OofShard,
+	}, nil
+}
+
+func validateOrder(p OrderParams) error {
+	if p.OrderUID == "" {
+		return fmt.Errorf("orderid %w", ErrMissingRequiredField)
+	}
+	if p.TrackNumber == "" {
+		return fmt.Errorf("tracknumber %w", ErrMissingRequiredField)
+	}
+	for _, item := range p.Items {
+		if item.TrackNumber != p.TrackNumber {
+			return fmt.Errorf("track number mismatch between order and item %w", ErrInvalidState)
+		}
+	}
+	if p.CustomerID == "" {
+		return fmt.Errorf("customerid %w", ErrMissingRequiredField)
+	}
+	return nil
 }
