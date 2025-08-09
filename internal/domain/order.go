@@ -88,11 +88,6 @@ func validateOrder(p OrderParams) error {
 	if p.TrackNumber == "" {
 		return fmt.Errorf("tracknumber %w", ErrMissingRequiredField)
 	}
-	for _, item := range p.Items {
-		if item.TrackNumber != p.TrackNumber {
-			return fmt.Errorf("track number mismatch between order and item %w", ErrInvalidState)
-		}
-	}
 	if p.CustomerID == "" {
 		return fmt.Errorf("customerid %w", ErrMissingRequiredField)
 	}
