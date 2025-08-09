@@ -25,7 +25,7 @@ func TestNewOrderInvalid(t *testing.T) {
 		t.Fatalf("expected error, got nil")
 	}
 
-	if !errors.Is(err, ErrMissingRequiredField) && !errors.Is(err, ErrValueBelowZero) && !errors.Is(err, ErrInvalidState) {
+	if !errors.Is(err, ErrInvalidState) {
 		t.Fatalf("expected error to be ErrMissingRequiredField or be ErrValueBelowZero or be ErrInvalidState, got %v", err)
 	}
 }
@@ -116,7 +116,7 @@ func TestNewOrderEmptyStructs(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected error, got nil")
 	}
-	if !errors.Is(err, ErrMissingRequiredField) {
-		t.Fatalf("expected error to be ErrMissingRequiredField, got %v", err)
+	if !errors.Is(err, ErrInvalidState) {
+		t.Fatalf("expected error to be ErrInvalidState, got %v", err)
 	}
 }

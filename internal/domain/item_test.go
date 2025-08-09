@@ -34,7 +34,7 @@ func TestNewItemListInvalid(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected error, got nil")
 	}
-	if !errors.Is(err, ErrValueBelowZero) && !errors.Is(err, ErrMissingRequiredField) {
+	if !errors.Is(err, ErrInvalidState) {
 		t.Fatalf("expected error to be ErrValueBelowZero or be ErrMissingRequiredField, got %v", err)
 	}
 

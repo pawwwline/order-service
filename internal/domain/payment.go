@@ -49,23 +49,23 @@ func NewPayment(params PaymentParams) (*Payment, error) {
 
 func validatePaymentParams(p PaymentParams) error {
 	if p.Transaction == "" {
-		return fmt.Errorf("transaction %w", ErrMissingRequiredField)
+		return fmt.Errorf("transaction %w", ErrInvalidState)
 	}
 	if p.Currency == "" {
-		return fmt.Errorf("currency %w", ErrMissingRequiredField)
+		return fmt.Errorf("currency %w", ErrInvalidState)
 	}
 
 	if p.Amount < 0 {
-		return fmt.Errorf("amount %w", ErrValueBelowZero)
+		return fmt.Errorf("amount is below zero: %w", ErrInvalidState)
 	}
 	if p.DeliveryCost < 0 {
-		return fmt.Errorf("deliveryCost %w", ErrValueBelowZero)
+		return fmt.Errorf("deliveryCost is below zero: %w", ErrInvalidState)
 	}
 	if p.GoodsTotal < 0 {
-		return fmt.Errorf("goodsTotal %w", ErrValueBelowZero)
+		return fmt.Errorf("goodsTotal is below zero: %w", ErrInvalidState)
 	}
 	if p.CustomFee < 0 {
-		return fmt.Errorf("customFee %w", ErrValueBelowZero)
+		return fmt.Errorf("customFee is below zero: %w", ErrInvalidState)
 	}
 
 	return nil

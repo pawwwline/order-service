@@ -39,19 +39,19 @@ func NewDelivery(params DeliveryParams) (*Delivery, error) {
 
 func validateDeliveryNotEmpty(params DeliveryParams) error {
 	if params.Phone == "" {
-		return fmt.Errorf("phone %w", ErrMissingRequiredField)
+		return fmt.Errorf("phone is empty: %w", ErrInvalidState)
 	}
 	if params.Zip == "" {
-		return fmt.Errorf("zip %w", ErrMissingRequiredField)
+		return fmt.Errorf("zip is empty: %w", ErrInvalidState)
 	}
 	if params.City == "" {
-		return fmt.Errorf("city %w", ErrMissingRequiredField)
+		return fmt.Errorf("city is empty: %w", ErrInvalidState)
 	}
 	if params.Address == "" {
-		return fmt.Errorf("address %w", ErrMissingRequiredField)
+		return fmt.Errorf("address is empty: %w", ErrInvalidState)
 	}
 	if params.Region == "" {
-		return fmt.Errorf("region %w", ErrMissingRequiredField)
+		return fmt.Errorf("region is empty: %w", ErrInvalidState)
 	}
 
 	return nil

@@ -23,8 +23,8 @@ func TestNewDeliveryInvalidParams(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected error, got nil")
 	}
-	if errors.Is(err, ErrMissingRequiredField) == false {
-		t.Fatalf("expected error to be missing required field, got %v", err)
+	if !errors.Is(err, ErrInvalidState) {
+		t.Fatalf("expected error to be ErrInvalidState, got %v", err)
 	}
 }
 

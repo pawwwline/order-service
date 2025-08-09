@@ -7,9 +7,7 @@ import (
 )
 
 var (
-	ErrMissingRequiredField = errors.New("missing required field")
-	ErrValueBelowZero       = errors.New("value below zero")
-	ErrInvalidState         = errors.New("invalid domain state")
+	ErrInvalidState = errors.New("invalid domain state")
 )
 
 type Order struct {
@@ -83,13 +81,13 @@ func NewOrder(p OrderParams) (*Order, error) {
 
 func validateOrder(p OrderParams) error {
 	if p.OrderUID == "" {
-		return fmt.Errorf("orderid %w", ErrMissingRequiredField)
+		return fmt.Errorf("orderId is missing: %w", ErrInvalidState)
 	}
 	if p.TrackNumber == "" {
-		return fmt.Errorf("tracknumber %w", ErrMissingRequiredField)
+		return fmt.Errorf("tracknumber is missing: %w", ErrInvalidState)
 	}
 	if p.CustomerID == "" {
-		return fmt.Errorf("customerid %w", ErrMissingRequiredField)
+		return fmt.Errorf("")
 	}
 	return nil
 }

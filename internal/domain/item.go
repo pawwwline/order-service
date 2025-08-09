@@ -66,17 +66,17 @@ func NewItemList(p []ItemParams) ([]Item, error) {
 
 func validateItemLength(p []ItemParams) error {
 	if len(p) == 0 {
-		return fmt.Errorf("item length is 0 %w", ErrInvalidState)
+		return fmt.Errorf("no items : %w", ErrInvalidState)
 	}
 	return nil
 }
 
 func validateItemParams(p ItemParams) error {
 	if p.Price < 0 {
-		return fmt.Errorf("price: %w", ErrValueBelowZero)
+		return fmt.Errorf("price is below zero: %w", ErrInvalidState)
 	}
 	if p.TotalPrice < 0 {
-		return fmt.Errorf("total_price: %w", ErrValueBelowZero)
+		return fmt.Errorf("price is below zero: %w", ErrInvalidState)
 	}
 	return nil
 }

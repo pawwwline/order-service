@@ -34,7 +34,7 @@ func (c *OrderUseCase) CreateOrder(ctx context.Context, params domain.OrderParam
 func (c *OrderUseCase) GetOrder(ctx context.Context, uuid string) (*domain.Order, error) {
 	if uuid == "" {
 		c.logger.Error("missing required field", "uuid", uuid)
-		return nil, domain.ErrMissingRequiredField
+		return nil, domain.ErrInvalidState
 	}
 
 	order, err := c.repository.GetOrderByUid(ctx, uuid)
