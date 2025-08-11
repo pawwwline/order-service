@@ -2,11 +2,13 @@ package usecase
 
 import (
 	"context"
-	"github.com/stretchr/testify/assert"
+	"database/sql"
 	"order-service/internal/domain"
 	logger2 "order-service/internal/lib/logger"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 type MockOrderRepository struct {
@@ -69,6 +71,10 @@ func (m *MockOrderRepository) GetOrderByUid(ctx context.Context, orderUID string
 	}
 	return &m.validOrder, nil
 
+}
+
+func (m *MockOrderRepository) GetIdempotencyKey(ctx context.Context, key string) (string, error) {
+	return "", sql.ErrNoRows
 }
 
 var expectedOrder = &domain.Order{
