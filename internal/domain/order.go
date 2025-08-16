@@ -16,7 +16,7 @@ type Order struct {
 	Entry             string
 	Delivery          *Delivery
 	Payment           *Payment
-	Items             []Item
+	Items             []*Item
 	Locale            string
 	InternalSignature string
 	CustomerID        string
@@ -87,7 +87,7 @@ func validateOrder(p OrderParams) error {
 		return fmt.Errorf("tracknumber is missing: %w", ErrInvalidState)
 	}
 	if p.CustomerID == "" {
-		return fmt.Errorf("")
+		return fmt.Errorf("customerID is missing: %w", ErrInvalidState)
 	}
 	return nil
 }

@@ -38,6 +38,7 @@ func NewItem(p ItemParams) (*Item, error) {
 		ChrtID:      p.ChrtID,
 		TrackNumber: p.TrackNumber,
 		Price:       p.Price,
+		Brand:       p.Brand,
 		Rid:         p.Rid,
 		Name:        p.Name,
 		Sale:        p.Sale,
@@ -48,18 +49,18 @@ func NewItem(p ItemParams) (*Item, error) {
 	}, nil
 }
 
-func NewItemList(p []ItemParams) ([]Item, error) {
+func NewItemList(p []ItemParams) ([]*Item, error) {
 	err := validateItemLength(p)
 	if err != nil {
 		return nil, err
 	}
-	var items []Item
+	var items []*Item
 	for _, item := range p {
 		i, err := NewItem(item)
 		if err != nil {
 			return nil, err
 		}
-		items = append(items, *i)
+		items = append(items, i)
 	}
 	return items, nil
 }
