@@ -4,70 +4,83 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"log/slog"
+	"fmt"
 	"order-service/internal/domain"
 )
 
 var ErrIdempotencyKeyExists = errors.New("idempotency key already exists")
 
 type OrderUseCase struct {
-	logger     *slog.Logger
 	repository OrderRepository
+	cache      Cache
 }
 
-func NewOrderUseCase(logger *slog.Logger, repository OrderRepository) *OrderUseCase {
+func NewOrderUseCase(repository OrderRepository, cache Cache) *OrderUseCase {
 	return &OrderUseCase{
-		logger:     logger,
 		repository: repository,
+		cache:      cache,
 	}
 }
 
 func (c *OrderUseCase) CreateOrder(ctx context.Context, params domain.OrderParams) error {
 	if err := c.checkIdempotency(params.OrderUID); err != nil {
-		if errors.Is(err, ErrIdempotencyKeyExists) {
-			c.logger.Error("idempotency key already exists", "key", params.OrderUID)
-			return err
-		}
 		return err
 	}
+
 	order, err := domain.NewOrder(params)
 	if err != nil {
-		c.logger.Error("failed to create order", "error:", err, "params:", params)
 		return err
 	}
 	if err = c.repository.SaveOrder(ctx, order); err != nil {
 		return err
 	}
+
+	c.cache.Set(ctx, order.OrderUID, order)
 	return nil
 
 }
 
-func (c *OrderUseCase) GetOrder(ctx context.Context, uuid string) (*domain.Order, error) {
-	if uuid == "" {
-		c.logger.Error("missing required field", "uuid", uuid)
-		return nil, domain.ErrInvalidState
+func (c *OrderUseCase) GetOrder(ctx context.Context, uid string) (*domain.Order, error) {
+	if uid == "" {
+		return nil, fmt.Errorf("uid is empty: %w", domain.ErrInvalidState)
 	}
 
-	order, err := c.repository.GetOrderByUid(ctx, uuid)
+	order, ok := c.cache.Get(ctx, uid)
+	if ok {
+		return order, nil
+	}
+
+	order, err := c.repository.GetOrderByUid(ctx, uid)
 	if err != nil {
 		return nil, err
 	}
+	c.cache.Set(ctx, order.OrderUID, order)
 	return order, nil
 }
 
-func (c *OrderUseCase) checkIdempotency(uuid string) error {
-	if uuid == "" {
-		c.logger.Error("missing required field", "uuid", uuid)
-		return domain.ErrInvalidState
+func (c *OrderUseCase) LoadOrdersCache(ctx context.Context, limit int) error {
+	orders, err := c.repository.GetLastOrders(ctx, limit)
+	if err != nil {
+		return err
+	}
+	for _, order := range orders {
+		c.cache.Set(ctx, order.OrderUID, order)
+	}
+	return nil
+
+}
+
+func (c *OrderUseCase) checkIdempotency(uid string) error {
+	if uid == "" {
+		return fmt.Errorf("uid is empty %w", domain.ErrInvalidState)
 	}
 
-	_, err := c.repository.GetIdempotencyKey(context.Background(), uuid)
+	_, err := c.repository.GetIdempotencyKey(context.Background(), uid)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil
 	}
 	if err != nil {
-		c.logger.Error("failed to check idempotency key", "error", err)
-		return err
+		return fmt.Errorf("idempotency check failed: %w", err)
 	}
 	return ErrIdempotencyKeyExists
 
