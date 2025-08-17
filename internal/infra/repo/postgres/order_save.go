@@ -80,8 +80,9 @@ func (p *PostgresDB) saveItemsTx(ctx context.Context, tx *sql.Tx, orderId int, i
 	if err != nil {
 		return err
 	}
-	defer stmt.Close()
-
+	defer func() {
+		_ = stmt.Close()
+	}()
 	for _, item := range items {
 		_, err := stmt.ExecContext(ctx,
 			orderId,

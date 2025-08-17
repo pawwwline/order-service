@@ -27,27 +27,35 @@ func (p *PostgresDB) SaveOrder(ctx context.Context, order *domain.Order) error {
 
 	orderID, err := p.saveOrderTx(ctx, tx, order)
 	if err != nil {
-		tx.Rollback()
+		if err := tx.Rollback(); err != nil {
+			return err
+		}
 		return err
 	}
 
 	if order.Delivery != nil {
 		if err := p.saveDeliveryTx(ctx, tx, orderID, order.Delivery); err != nil {
-			tx.Rollback()
+			if err := tx.Rollback(); err != nil {
+				return err
+			}
 			return err
 		}
 	}
 
 	if order.Payment != nil {
 		if err := p.savePaymentsTx(ctx, tx, orderID, order.Payment); err != nil {
-			tx.Rollback()
+			if err := tx.Rollback(); err != nil {
+				return err
+			}
 			return err
 		}
 	}
 
 	if len(order.Items) > 0 {
 		if err := p.saveItemsTx(ctx, tx, orderID, order.Items); err != nil {
-			tx.Rollback()
+			if err := tx.Rollback(); err != nil {
+				return err
+			}
 			return err
 		}
 	}

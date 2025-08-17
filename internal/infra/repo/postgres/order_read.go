@@ -11,7 +11,9 @@ func (p *PostgresDB) getOrderItems(ctx context.Context, orderId int) ([]*domain.
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	for rows.Next() {
 		var item domain.Item
@@ -35,7 +37,9 @@ func (p *PostgresDB) getItemsByOrderIds(ctx context.Context, orderIdArr []int) (
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	itemsByOrder := make(map[int][]*domain.Item)
 
@@ -84,7 +88,9 @@ func (p *PostgresDB) getOrdersWithoutItems(ctx context.Context, limit int) ([]*d
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	var orders []*domain.Order
 	for rows.Next() {
