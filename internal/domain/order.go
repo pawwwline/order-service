@@ -11,6 +11,7 @@ var (
 )
 
 type Order struct {
+	Id                int
 	OrderUID          string
 	TrackNumber       string
 	Entry             string
