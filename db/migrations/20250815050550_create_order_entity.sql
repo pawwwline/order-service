@@ -14,8 +14,10 @@ CREATE TABLE orders (
     shardkey VARCHAR(10),
     sm_id INT,
     oof_shard VARCHAR(10)
-    INDEX idx_orders_date_created (date_created DESC)
 );
+
+CREATE INDEX idx_orders_date_created ON orders (date_created DESC);
+
 
 CREATE TABLE deliveries (
     id SERIAL PRIMARY KEY,
