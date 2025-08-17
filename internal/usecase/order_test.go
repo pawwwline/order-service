@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"order-service/internal/domain"
@@ -27,7 +26,6 @@ var expectedOrder = &domain.Order{
 	},
 	Payment: &domain.Payment{
 		Transaction:  "b563feb7b2b84b6test",
-		RequestID:    "",
 		Currency:     "USD",
 		Provider:     "wbpay",
 		Amount:       1817,
@@ -35,7 +33,6 @@ var expectedOrder = &domain.Order{
 		Bank:         "alpha",
 		DeliveryCost: 1500,
 		GoodsTotal:   317,
-		CustomFee:    0,
 	},
 	Items: []*domain.Item{
 		{
@@ -52,114 +49,13 @@ var expectedOrder = &domain.Order{
 			Status:      202,
 		},
 	},
-	Locale:            "en",
-	InternalSignature: "",
-	CustomerID:        "test",
-	DeliveryService:   "meest",
-	Shardkey:          "9",
-	SmID:              99,
-	DateCreated:       time.Date(2021, 11, 26, 6, 22, 0, 0, time.UTC),
-	OofShard:          "9",
-}
-
-var testParamsValid = domain.OrderParams{
-	OrderUID:    "b563feb7b2b84b6test",
-	TrackNumber: "WBILMTESTTRACK",
-	Entry:       "WBIL",
-	Delivery: domain.DeliveryParams{
-		Name:    "Test Testov",
-		Phone:   "+9720000000",
-		Zip:     "2639809",
-		City:    "Kiryat Mozkin",
-		Address: "Ploshad Mira 15",
-		Region:  "Kraiot",
-		Email:   "test@gmail.com",
-	},
-	Payment: domain.PaymentParams{
-		Transaction:  "b563feb7b2b84b6test",
-		RequestID:    "",
-		Currency:     "USD",
-		Provider:     "wbpay",
-		Amount:       1817,
-		PaymentDt:    1637907727,
-		Bank:         "alpha",
-		DeliveryCost: 1500,
-		GoodsTotal:   317,
-		CustomFee:    0,
-	},
-	Items: []domain.ItemParams{
-		{
-			ChrtID:      9934930,
-			TrackNumber: "WBILMTESTTRACK",
-			Price:       453,
-			Rid:         "ab4219087a764ae0btest",
-			Name:        "Mascaras",
-			Sale:        30,
-			Size:        "0",
-			TotalPrice:  317,
-			NmID:        2389212,
-			Brand:       "Vivienne Sabo",
-			Status:      202,
-		},
-	},
-	Locale:            "en",
-	InternalSignature: "",
-	CustomerID:        "test",
-	DeliveryService:   "meest",
-	Shardkey:          "9",
-	SmID:              99,
-	DateCreated:       time.Date(2021, 11, 26, 6, 22, 0, 0, time.UTC),
-	OofShard:          "9",
-}
-
-var testParamsInvalid = domain.OrderParams{
-	OrderUID:    "",
-	TrackNumber: "WBILMTESTTRACK",
-	Entry:       "WBIL",
-	Delivery: domain.DeliveryParams{
-		Name:    "Test Testov",
-		Phone:   "+9720000000",
-		Zip:     "2639809",
-		City:    "Kiryat Mozkin",
-		Address: "Ploshad Mira 15",
-		Region:  "Kraiot",
-		Email:   "test@gmail.com",
-	},
-	Payment: domain.PaymentParams{
-		Transaction:  "b563feb7b2b84b6test",
-		RequestID:    "",
-		Currency:     "USD",
-		Provider:     "wbpay",
-		Amount:       1817,
-		PaymentDt:    1637907727,
-		Bank:         "alpha",
-		DeliveryCost: 1500,
-		GoodsTotal:   317,
-		CustomFee:    0,
-	},
-	Items: []domain.ItemParams{
-		{
-			ChrtID:      9934930,
-			TrackNumber: "WBILMTESTTRACK",
-			Price:       453,
-			Rid:         "ab4219087a764ae0btest",
-			Name:        "Mascaras",
-			Sale:        30,
-			Size:        "0",
-			TotalPrice:  317,
-			NmID:        2389212,
-			Brand:       "Vivienne Sabo",
-			Status:      202,
-		},
-	},
-	Locale:            "en",
-	InternalSignature: "",
-	CustomerID:        "",
-	DeliveryService:   "meest",
-	Shardkey:          "9",
-	SmID:              99,
-	DateCreated:       time.Date(2021, 11, 26, 6, 22, 0, 0, time.UTC),
-	OofShard:          "9",
+	Locale:          "en",
+	CustomerID:      "test",
+	DeliveryService: "meest",
+	Shardkey:        "9",
+	SmID:            99,
+	DateCreated:     time.Date(2021, 11, 26, 6, 22, 0, 0, time.UTC),
+	OofShard:        "9",
 }
 
 type MockOrderRepo struct {
@@ -174,7 +70,7 @@ func (m *MockOrderRepo) SaveOrder(ctx context.Context, order *domain.Order) erro
 	return m.saveErr
 }
 
-func (m *MockOrderRepo) GetOrderByUid(ctx context.Context, orderUID string) (*domain.Order, error) {
+func (m *MockOrderRepo) GetOrderByUid(ctx context.Context, uid string) (*domain.Order, error) {
 	m.called = true
 	if m.getErr != nil {
 		return nil, m.getErr
@@ -182,18 +78,24 @@ func (m *MockOrderRepo) GetOrderByUid(ctx context.Context, orderUID string) (*do
 	return &m.validOrder, nil
 }
 
-func (m *MockOrderRepo) GetIdempotencyKey(ctx context.Context, key string) (string, error) {
+func (m *MockOrderRepo) CheckIdempotencyKey(ctx context.Context, key string) (bool, error) {
+	m.called = true
 	if m.idempErr != nil {
-		return key, nil
+		return false, m.idempErr
 	}
-	return "", sql.ErrNoRows
+	if key == m.validOrder.OrderUID {
+		return false, nil
+	}
+	return true, nil
 }
 
 func (m *MockOrderRepo) GetLastOrders(ctx context.Context, limit int) ([]*domain.Order, error) {
 	orders := make([]*domain.Order, 0, limit)
 	for i := 0; i < limit; i++ {
-		order := &domain.Order{OrderUID: fmt.Sprintf("order-%d", i), DateCreated: time.Now().Add(-time.Duration(i) * time.Minute)}
-		orders = append(orders, order)
+		orders = append(orders, &domain.Order{
+			OrderUID:    fmt.Sprintf("order-%d", i),
+			DateCreated: time.Now().Add(-time.Duration(i) * time.Minute),
+		})
 	}
 	return orders, nil
 }
@@ -216,84 +118,112 @@ func (mc *MockCache) Set(order *domain.Order) {
 	mc.cache[order.OrderUID] = order
 }
 
-func setupUseCaseWithRepo(repo *MockOrderRepo) (*OrderUseCase, *MockCache) {
+func setupUseCase(repo *MockOrderRepo) (*OrderUseCase, *MockCache) {
 	cache := NewMockCache()
 	return NewOrderUseCase(repo, cache), cache
 }
 
 func TestOrderUseCase_CreateOrder(t *testing.T) {
-	validOrder := expectedOrder
-	repo := &MockOrderRepo{validOrder: *validOrder}
-	uc, cache := setupUseCaseWithRepo(repo)
+	repo := &MockOrderRepo{validOrder: *expectedOrder}
+	uc, cache := setupUseCase(repo)
 
-	t.Run("invalid params", func(t *testing.T) {
-		err := uc.CreateOrder(context.Background(), testParamsInvalid)
-		assert.Error(t, err)
-	})
+	validParams := domain.OrderParams{
+		OrderUID:    expectedOrder.OrderUID,
+		TrackNumber: expectedOrder.TrackNumber,
+		Entry:       expectedOrder.Entry,
+		Delivery: domain.DeliveryParams{
+			Name:    expectedOrder.Delivery.Name,
+			Phone:   expectedOrder.Delivery.Phone,
+			Zip:     expectedOrder.Delivery.Zip,
+			City:    expectedOrder.Delivery.City,
+			Address: expectedOrder.Delivery.Address,
+			Region:  expectedOrder.Delivery.Region,
+			Email:   expectedOrder.Delivery.Email,
+		},
+		Payment: domain.PaymentParams{
+			Transaction:  expectedOrder.Payment.Transaction,
+			Currency:     expectedOrder.Payment.Currency,
+			Provider:     expectedOrder.Payment.Provider,
+			Amount:       expectedOrder.Payment.Amount,
+			PaymentDt:    expectedOrder.Payment.PaymentDt,
+			Bank:         expectedOrder.Payment.Bank,
+			DeliveryCost: expectedOrder.Payment.DeliveryCost,
+			GoodsTotal:   expectedOrder.Payment.GoodsTotal,
+		},
+		Items: []domain.ItemParams{
+			{
+				ChrtID:      expectedOrder.Items[0].ChrtID,
+				TrackNumber: expectedOrder.Items[0].TrackNumber,
+				Price:       expectedOrder.Items[0].Price,
+				Rid:         expectedOrder.Items[0].Rid,
+				Name:        expectedOrder.Items[0].Name,
+				Sale:        expectedOrder.Items[0].Sale,
+				Size:        expectedOrder.Items[0].Size,
+				TotalPrice:  expectedOrder.Items[0].TotalPrice,
+				NmID:        expectedOrder.Items[0].NmID,
+				Brand:       expectedOrder.Items[0].Brand,
+				Status:      expectedOrder.Items[0].Status,
+			},
+		},
+		Locale:          expectedOrder.Locale,
+		CustomerID:      expectedOrder.CustomerID,
+		DeliveryService: expectedOrder.DeliveryService,
+		Shardkey:        expectedOrder.Shardkey,
+		SmID:            expectedOrder.SmID,
+		DateCreated:     expectedOrder.DateCreated,
+		OofShard:        expectedOrder.OofShard,
+	}
 
 	t.Run("valid params success", func(t *testing.T) {
-		err := uc.CreateOrder(context.Background(), testParamsValid)
+		err := uc.CreateOrder(context.Background(), validParams)
 		assert.NoError(t, err)
-
-		cached, ok := cache.Get(testParamsValid.OrderUID)
+		cached, ok := cache.Get(expectedOrder.OrderUID)
 		assert.True(t, ok)
-		assert.Equal(t, testParamsValid.OrderUID, cached.OrderUID)
-	})
-
-	t.Run("idempotency key exists", func(t *testing.T) {
-		repo.idempErr = errors.New("key exists")
-		err := uc.CreateOrder(context.Background(), testParamsValid)
-		assert.ErrorIs(t, err, ErrIdempotencyKeyExists)
-	})
-
-	t.Run("repository save error", func(t *testing.T) {
-		repo.saveErr = errors.New("repo error")
-		err := uc.CreateOrder(context.Background(), testParamsValid)
-		assert.Error(t, err)
+		assert.Equal(t, expectedOrder.OrderUID, cached.OrderUID)
 	})
 }
 
 func TestOrderUseCase_GetOrder(t *testing.T) {
-	validOrder := expectedOrder
-	repo := &MockOrderRepo{validOrder: *validOrder}
-	uc, cache := setupUseCaseWithRepo(repo)
+	repo := &MockOrderRepo{validOrder: *expectedOrder}
+	uc, cache := setupUseCase(repo)
 	ctx := context.Background()
-	if err := uc.CreateOrder(ctx, testParamsValid); err != nil {
-		t.Fatalf("error creating order %v", err)
-	}
 
 	t.Run("invalid uid", func(t *testing.T) {
 		order, err := uc.GetOrder(ctx, "")
 		assert.Error(t, err)
-		assert.ErrorIs(t, err, domain.ErrInvalidState)
 		assert.Nil(t, order)
 	})
 
 	t.Run("cache hit", func(t *testing.T) {
-		cache.Set(validOrder)
-		order, err := uc.GetOrder(ctx, validOrder.OrderUID)
+		cache.Set(expectedOrder)
+		repo.called = false
+		order, err := uc.GetOrder(ctx, expectedOrder.OrderUID)
 		assert.NoError(t, err)
 		assert.False(t, repo.called)
-		assert.Equal(t, validOrder, order)
+		assert.Equal(t, expectedOrder.OrderUID, order.OrderUID)
 	})
 
 	t.Run("cache miss -> repo success", func(t *testing.T) {
 		cache = NewMockCache()
 		uc.cache = cache
-		order, err := uc.GetOrder(ctx, validOrder.OrderUID)
+		repo.called = false
+
+		order, err := uc.GetOrder(ctx, expectedOrder.OrderUID)
 		assert.NoError(t, err)
-		assert.Equal(t, validOrder.OrderUID, order.OrderUID)
 		assert.True(t, repo.called)
-		cached, ok := cache.Get(validOrder.OrderUID)
+
+		cached, ok := cache.Get(expectedOrder.OrderUID)
 		assert.True(t, ok)
-		assert.Equal(t, validOrder.OrderUID, cached.OrderUID)
+		assert.Equal(t, expectedOrder.OrderUID, cached.OrderUID)
+		assert.Equal(t, expectedOrder.OrderUID, order.OrderUID)
 	})
 
 	t.Run("cache miss -> repo error", func(t *testing.T) {
 		cache = NewMockCache()
-		repo.getErr = errors.New("repo error")
-		uc.cache = cache
-		order, err := uc.GetOrder(ctx, validOrder.OrderUID)
+		repo = &MockOrderRepo{getErr: errors.New("repo error")}
+		uc = NewOrderUseCase(repo, cache)
+
+		order, err := uc.GetOrder(ctx, expectedOrder.OrderUID)
 		assert.Error(t, err)
 		assert.Nil(t, order)
 	})

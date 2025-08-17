@@ -2,10 +2,10 @@ package usecase
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"order-service/internal/domain"
+	"order-service/internal/infra/repo"
 )
 
 var ErrIdempotencyKeyExists = errors.New("idempotency key already exists")
@@ -52,6 +52,9 @@ func (c *OrderUseCase) GetOrder(ctx context.Context, uid string) (*domain.Order,
 
 	order, err := c.repository.GetOrderByUid(ctx, uid)
 	if err != nil {
+		if errors.Is(err, repo.ErrNotFound) {
+			return nil, fmt.Errorf("order_uid %s: %w", uid, err)
+		}
 		return nil, err
 	}
 	c.cache.Set(order)
@@ -75,13 +78,12 @@ func (c *OrderUseCase) checkIdempotency(uid string) error {
 		return fmt.Errorf("uid is empty %w", domain.ErrInvalidState)
 	}
 
-	_, err := c.repository.GetIdempotencyKey(context.Background(), uid)
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil
-	}
+	exists, err := c.repository.CheckIdempotencyKey(context.Background(), uid)
 	if err != nil {
-		return fmt.Errorf("idempotency check failed: %w", err)
+		return fmt.Errorf("idempotnecy check failed %w", err)
 	}
-	return ErrIdempotencyKeyExists
-
+	if exists {
+		return ErrIdempotencyKeyExists
+	}
+	return nil
 }
