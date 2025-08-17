@@ -3,8 +3,10 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"order-service/internal/domain"
+	"order-service/internal/infra/repo"
 )
 
 type PostgresDB struct {
@@ -76,6 +78,9 @@ func (p *PostgresDB) GetOrderByUid(ctx context.Context, orderUID string) (*domai
 		&payment.Transaction, &payment.RequestID, &payment.Provider, &payment.Amount, &payment.PaymentDt, &payment.Bank, &payment.DeliveryCost, &payment.GoodsTotal, &payment.CustomFee,
 	)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, repo.ErrNotFound
+		}
 		return nil, err
 	}
 
