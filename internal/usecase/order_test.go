@@ -205,15 +205,15 @@ type MockCache struct {
 
 func NewMockCache() *MockCache { return &MockCache{cache: make(map[string]*domain.Order)} }
 
-func (mc *MockCache) Get(ctx context.Context, uid string) (*domain.Order, bool) {
+func (mc *MockCache) Get(uid string) (*domain.Order, bool) {
 	order, ok := mc.cache[uid]
 	mc.called = true
 	return order, ok
 }
 
-func (mc *MockCache) Set(ctx context.Context, uid string, order *domain.Order) {
+func (mc *MockCache) Set(order *domain.Order) {
 	mc.called = true
-	mc.cache[uid] = order
+	mc.cache[order.OrderUID] = order
 }
 
 func setupUseCaseWithRepo(repo *MockOrderRepo) (*OrderUseCase, *MockCache) {
@@ -235,7 +235,7 @@ func TestOrderUseCase_CreateOrder(t *testing.T) {
 		err := uc.CreateOrder(context.Background(), testParamsValid)
 		assert.NoError(t, err)
 
-		cached, ok := cache.Get(context.Background(), testParamsValid.OrderUID)
+		cached, ok := cache.Get(testParamsValid.OrderUID)
 		assert.True(t, ok)
 		assert.Equal(t, testParamsValid.OrderUID, cached.OrderUID)
 	})
@@ -270,7 +270,7 @@ func TestOrderUseCase_GetOrder(t *testing.T) {
 	})
 
 	t.Run("cache hit", func(t *testing.T) {
-		cache.Set(ctx, validOrder.OrderUID, validOrder)
+		cache.Set(validOrder)
 		order, err := uc.GetOrder(ctx, validOrder.OrderUID)
 		assert.NoError(t, err)
 		assert.False(t, repo.called)
@@ -284,7 +284,7 @@ func TestOrderUseCase_GetOrder(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, validOrder.OrderUID, order.OrderUID)
 		assert.True(t, repo.called)
-		cached, ok := cache.Get(ctx, validOrder.OrderUID)
+		cached, ok := cache.Get(validOrder.OrderUID)
 		assert.True(t, ok)
 		assert.Equal(t, validOrder.OrderUID, cached.OrderUID)
 	})
@@ -310,7 +310,7 @@ func TestOrderUseCase_LoadOrdersCache(t *testing.T) {
 
 	orders, _ := repo.GetLastOrders(context.Background(), limit)
 	for _, order := range orders {
-		cached, ok := cache.Get(context.Background(), order.OrderUID)
+		cached, ok := cache.Get(order.OrderUID)
 		assert.True(t, ok)
 		assert.Equal(t, order.OrderUID, cached.OrderUID)
 	}

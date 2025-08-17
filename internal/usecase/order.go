@@ -35,7 +35,7 @@ func (c *OrderUseCase) CreateOrder(ctx context.Context, params domain.OrderParam
 		return err
 	}
 
-	c.cache.Set(ctx, order.OrderUID, order)
+	c.cache.Set(order)
 	return nil
 
 }
@@ -45,7 +45,7 @@ func (c *OrderUseCase) GetOrder(ctx context.Context, uid string) (*domain.Order,
 		return nil, fmt.Errorf("uid is empty: %w", domain.ErrInvalidState)
 	}
 
-	order, ok := c.cache.Get(ctx, uid)
+	order, ok := c.cache.Get(uid)
 	if ok {
 		return order, nil
 	}
@@ -54,7 +54,7 @@ func (c *OrderUseCase) GetOrder(ctx context.Context, uid string) (*domain.Order,
 	if err != nil {
 		return nil, err
 	}
-	c.cache.Set(ctx, order.OrderUID, order)
+	c.cache.Set(order)
 	return order, nil
 }
 
@@ -64,7 +64,7 @@ func (c *OrderUseCase) LoadOrdersCache(ctx context.Context, limit int) error {
 		return err
 	}
 	for _, order := range orders {
-		c.cache.Set(ctx, order.OrderUID, order)
+		c.cache.Set(order)
 	}
 	return nil
 
