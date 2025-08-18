@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/joho/godotenv"
@@ -13,6 +14,8 @@ type Config struct {
 	Env   string `env:"APP_ENV"`
 	Kafka KafkaConfig
 	DB    DBConfig
+	HTTP  HTTPConfig
+	Cache CacheConfig
 }
 
 type DBConfig struct {
@@ -49,6 +52,25 @@ type KafkaConfig struct {
 	RetryMaxAttempts   int    `env:"KAFKA_RETRY_MAX"`
 	BackoffDurationMin int    `env:"KAFKA_BACKOFF_MAX"` // in milliseconds
 	BackoffDurationMax int    `env:"KAFKA_BACKOFF_MIN"` // in milliseconds
+}
+
+type HTTPConfig struct {
+	Host         string `env:"HTTP_HOST"`
+	Port         string `env:"HTTP_PORT"`
+	ReadTimeout  int    `env:"HTTP_READ_TIMEOUT" env-default:"5"`
+	WriteTimeout int    `env:"HTTP_WRITE_TIMEOUT" env-default:"10"`
+	IdleTimeout  int    `env:"HTTP_IDLE_TIMEOUT" env-default:"120"`
+}
+
+type CacheConfig struct {
+	Limit int `env:"CACHE_LIMIT" env-default:"1000"`
+}
+
+func (dc *DBConfig) DSN() string {
+	return fmt.Sprintf(
+		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+		dc.Host, dc.Port, dc.User, dc.Password, dc.Name, dc.SSLMode,
+	)
 }
 
 func InitConfig() (*Config, error) {
