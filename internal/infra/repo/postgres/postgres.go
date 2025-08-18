@@ -130,3 +130,7 @@ func (p *PostgresDB) GetLastOrders(ctx context.Context, limit int) ([]*domain.Or
 	return orders, nil
 
 }
+
+func (p *PostgresDB) Close() error {
+	return p.db.Close()
+}
