@@ -14,7 +14,7 @@ type Retry struct {
 	backoffDurationMax int
 }
 
-func NewRetry(cfg config.KafkaConfig) *Retry {
+func NewRetry(cfg *config.KafkaConfig) *Retry {
 	return &Retry{
 		maxAttempts:        cfg.RetryMaxAttempts,
 		backoffDurationMin: cfg.BackoffDurationMin,

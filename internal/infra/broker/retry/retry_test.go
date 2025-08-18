@@ -10,7 +10,7 @@ import (
 )
 
 func TestRetryWrapperResults(t *testing.T) {
-	retry := NewRetry(config.KafkaConfig{
+	retry := NewRetry(&config.KafkaConfig{
 		RetryMaxAttempts:   5,
 		BackoffDurationMin: 10,
 		BackoffDurationMax: 100,

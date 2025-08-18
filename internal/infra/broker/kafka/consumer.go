@@ -20,7 +20,7 @@ type KafkaConsumer struct {
 	DLQWriter    *kafka.Writer
 }
 
-func NewKafkaConsumer(cfg config.KafkaConfig, handler Handler, retry RetryHandler, logger *slog.Logger) *KafkaConsumer {
+func NewKafkaConsumer(cfg *config.KafkaConfig, handler Handler, retry RetryHandler, logger *slog.Logger) *KafkaConsumer {
 	return &KafkaConsumer{
 		broker: cfg.Broker,
 		orderReader: kafka.NewReader(kafka.ReaderConfig{
