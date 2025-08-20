@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -37,16 +38,25 @@ func NewServer(cfg *config.HTTPConfig, uc *usecase.OrderUseCase, l *slog.Logger)
 }
 
 func (s *Server) Run() {
-	r := chi.NewRouter()
-	r.Use(mid.RequestLogger(s.logger))
-	r.Use(middleware.Recoverer)
-	s.httpServer.Handler = r
+	s.httpServer.Handler = s.Routes()
 	s.logger.Info("HTTP server starting", "addr", fmt.Sprintf("%s:%s", s.cfg.Host, s.cfg.Port))
-	if err := s.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+	err := s.httpServer.ListenAndServe()
+	if err != nil && !errors.Is(err, http.ErrServerClosed) {
 		s.logger.Error("server failed", "error", err)
+
+		return
 	}
 }
 
 func (s *Server) Shutdown(ctx context.Context) error {
 	return s.httpServer.Shutdown(ctx)
+}
+
+func (s *Server) Routes() http.Handler {
+	r := chi.NewRouter()
+	r.Use(mid.RequestLogger(s.logger))
+	r.Use(middleware.Recoverer)
+	s.httpHandler.RegisterRoutes(r)
+
+	return r
 }
