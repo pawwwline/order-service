@@ -15,9 +15,21 @@ func NewBroker(consumer Consumer) *Broker {
 }
 
 func (b *Broker) Run(ctx context.Context) {
+	if err := b.consumer.Init(); err != nil {
+		return
+	}
+	<-b.consumer.Ready()
+
 	b.wg.Add(2)
 	go b.runOrders(ctx)
 	go b.runRetries(ctx)
+
+}
+
+
+func (b *Broker) Shutdown() error {
+	b.wg.Wait()
+	return b.consumer.ShutDown()
 }
 
 func (b *Broker) runOrders(ctx context.Context) {
@@ -27,7 +39,10 @@ func (b *Broker) runOrders(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		default:
-			b.consumer.ReadOrderMsg(ctx)
+			err := b.consumer.ReadOrderMsg(ctx)
+			if err != nil {
+				return 
+			}
 		}
 	}
 }
@@ -39,12 +54,10 @@ func (b *Broker) runRetries(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		default:
-			b.consumer.ReadRetryMsg(ctx)
+			err := b.consumer.ReadRetryMsg(ctx)
+			if err != nil {
+				return 
+			}
 		}
 	}
-}
-
-func (b *Broker) Shutdown() error {
-	b.wg.Wait()
-	return b.consumer.ShutDown()
 }
