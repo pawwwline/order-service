@@ -1,3 +1,4 @@
+//go:build integration_migration
 package integration
 
 import (
