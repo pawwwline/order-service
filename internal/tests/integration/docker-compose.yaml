@@ -1,0 +1,43 @@
+
+services:
+  zookeeper:
+    image: bitnami/zookeeper:3.8
+    container_name: test_zookeeper
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    ports:
+      - "2181:2181"
+    networks:
+      - test_network
+
+  kafka:
+    image: bitnami/kafka:3.5
+    container_name: test_kafka
+    environment:
+        - KAFKA_BROKER_ID=1
+        - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+        - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092
+        - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+        - ALLOW_PLAINTEXT_LISTENER=yes
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    networks:
+      - test_network
+
+  postgres:
+    image: postgres:15
+    container_name: test_postgres
+    environment:
+      - POSTGRES_USER=test
+      - POSTGRES_PASSWORD=test
+      - POSTGRES_DB=test
+    ports:
+      - "5432:5432"
+    networks:
+      - test_network
+
+networks:
+  test_network:
+    driver: bridge
