@@ -36,6 +36,7 @@ CREATE TABLE payments (
     order_id INT REFERENCES orders(id) ON DELETE CASCADE,
     transaction VARCHAR(100),
     request_id VARCHAR(100),
+    currency VARCHAR(10),
     provider VARCHAR(20),
     amount INT,
     payment_dt INT,

@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE orders (
+CREATE TABLE IF NOT EXISTS orders (
     id SERIAL PRIMARY KEY,
     order_uid VARCHAR(50) NOT NULL UNIQUE,
     track_number VARCHAR(50),
@@ -15,6 +15,11 @@ CREATE TABLE orders (
     sm_id INT,
     oof_shard VARCHAR(10)
 );
+
+
+CREATE INDEX idx_orders_date_created ON orders (date_created DESC);
+
+
 
 CREATE TABLE deliveries (
     id SERIAL PRIMARY KEY,
@@ -33,6 +38,7 @@ CREATE TABLE payments (
     order_id INT REFERENCES orders(id) ON DELETE CASCADE,
     transaction VARCHAR(100),
     request_id VARCHAR(100),
+    currency VARCHAR(10),
     provider VARCHAR(20),
     amount INT,
     payment_dt INT,
