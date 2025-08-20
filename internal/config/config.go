@@ -19,7 +19,7 @@ type Config struct {
 }
 
 type DBConfig struct {
-	Host         string `env:"DB_PORT"`
+	Host         string `env:"DB_HOST"`
 	Port         int    `env:"DB_PORT"`
 	User         string `env:"DB_USER"`
 	Password     string `env:"DB_PASSWORD"`
@@ -50,8 +50,8 @@ type KafkaConfig struct {
 	RetryTopicCfg      RetryTopicConfig
 	Broker             string `env:"KAFKA_BROKER"`
 	RetryMaxAttempts   int    `env:"KAFKA_RETRY_MAX"`
-	BackoffDurationMin int    `env:"KAFKA_BACKOFF_MAX"` // in milliseconds
-	BackoffDurationMax int    `env:"KAFKA_BACKOFF_MIN"` // in milliseconds
+	BackoffDurationMin int    `env:"KAFKA_BACKOFF_MIN"` // in seconds
+	BackoffDurationMax int    `env:"KAFKA_BACKOFF_MAX"` // in seconds
 }
 
 type HTTPConfig struct {
@@ -91,7 +91,6 @@ func mapStructs() (*Config, error) {
 	if err := cleanenv.ReadEnv(&cfg); err != nil {
 		return nil, err
 	}
-
 	return &cfg, nil
 
 }
