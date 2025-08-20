@@ -1,0 +1,154 @@
+definitions:
+  dto.DeliveryResponse:
+    properties:
+      address:
+        example: Ploshad Mira 15
+        type: string
+      city:
+        example: Kiryat Mozkin
+        type: string
+      email:
+        example: test@gmail.com
+        type: string
+      name:
+        example: Test Testov
+        type: string
+      phone:
+        example: "+9720000000"
+        type: string
+      region:
+        example: Kraiot
+        type: string
+      zip:
+        example: "2639809"
+        type: string
+    type: object
+  dto.ErrorResponse:
+    properties:
+      code:
+        example: 404
+        type: integer
+      message:
+        example: order not found
+        type: string
+    type: object
+  dto.ItemResponse:
+    properties:
+      brand:
+        example: Vivienne Sabo
+        type: string
+      chrt_id:
+        example: 9934930
+        type: integer
+      name:
+        example: Mascaras
+        type: string
+      price:
+        example: 453
+        type: integer
+      sale:
+        example: 30
+        type: integer
+      size:
+        example: "0"
+        type: string
+      status:
+        example: 202
+        type: integer
+      total_price:
+        example: 317
+        type: integer
+      track_number:
+        example: WBILMTESTTRACK
+        type: string
+    type: object
+  dto.OrderResponse:
+    properties:
+      customer_id:
+        example: test
+        type: string
+      date_created:
+        example: "2021-11-26T06:22:19Z"
+        type: string
+      delivery:
+        $ref: '#/definitions/dto.DeliveryResponse'
+      delivery_service:
+        example: meest
+        type: string
+      items:
+        items:
+          $ref: '#/definitions/dto.ItemResponse'
+        type: array
+      order_uid:
+        example: b563feb7b2b84b6test
+        type: string
+      payment:
+        $ref: '#/definitions/dto.PaymentResponse'
+      track_number:
+        example: WBILMTESTTRACK
+        type: string
+    type: object
+  dto.PaymentResponse:
+    properties:
+      amount:
+        example: 1817
+        type: integer
+      bank:
+        example: alpha
+        type: string
+      currency:
+        example: USD
+        type: string
+      custom_fee:
+        example: 0
+        type: integer
+      delivery_cost:
+        example: 1500
+        type: integer
+      goods_total:
+        example: 317
+        type: integer
+      provider:
+        example: wbpay
+        type: string
+      request_id:
+        example: ""
+        type: string
+      transaction:
+        example: b563feb7b2b84b6test
+        type: string
+    type: object
+info:
+  contact: { }
+  version: 1.0.0
+  title: Order Service API
+paths:
+  /orders/{uid}:
+    get:
+      description: Get order by UID
+      parameters:
+      - description: Order UID
+        in: path
+        name: uid
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.OrderResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      tags:
+      - orders
+swagger: "2.0"
