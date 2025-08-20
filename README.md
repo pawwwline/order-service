@@ -1,4 +1,4 @@
-![Coverage](https://img.shields.io/badge/dynamic/json?color=success&label=Coverage&query=%24.coverage&suffix=%25&url=https%3A%2F%2F<ваш-юзер>.github.io%2F<название-репо>%2Fcoverage.json&logo=go&style=for-the-badge)
+![Coverage](https://img.shields.io/badge/dynamic/json?color=success&label=Coverage&query=%24.coverage&suffix=%25&url=https%3A%2F%2Fpawwwline.github.io%2Forder-service%2Fcoverage.json&logo=go&style=for-the-badge)
 
 # Order processing service
 
