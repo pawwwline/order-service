@@ -77,7 +77,7 @@ func (p *PostgresDB) getOrdersWithoutItems(ctx context.Context, limit int) ([]*d
 			o.id, o.order_uid, o.track_number, o.entry, o.customer_id, o.delivery_service,
 			o.date_created, o.locale, o.internal_signature, o.shardkey, o.sm_id, o.oof_shard,
 			d.name, d.phone, d.zip, d.city, d.address, d.region, d.email,
-			p.transaction, p.request_id, p.provider, p.amount, p.payment_dt, p.bank,
+			p.transaction, p.request_id, p.currency, p.provider, p.amount, p.payment_dt, p.bank,
 			p.delivery_cost, p.goods_total, p.custom_fee
 		FROM orders o
 		JOIN deliveries d ON o.id = d.order_id
@@ -102,7 +102,7 @@ func (p *PostgresDB) getOrdersWithoutItems(ctx context.Context, limit int) ([]*d
 			&o.Id, &o.OrderUID, &o.TrackNumber, &o.Entry, &o.CustomerID, &o.DeliveryService,
 			&o.DateCreated, &o.Locale, &o.InternalSignature, &o.Shardkey, &o.SmID, &o.OofShard,
 			&delivery.Name, &delivery.Phone, &delivery.Zip, &delivery.City, &delivery.Address, &delivery.Region, &delivery.Email,
-			&payment.Transaction, &payment.RequestID, &payment.Provider, &payment.Amount, &payment.PaymentDt,
+			&payment.Transaction, &payment.RequestID, &payment.Currency, &payment.Provider, &payment.Amount, &payment.PaymentDt,
 			&payment.Bank, &payment.DeliveryCost, &payment.GoodsTotal, &payment.CustomFee,
 		); err != nil {
 			return nil, err
