@@ -6,7 +6,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN apk add --no-cache git
+RUN apk add git
 
 RUN git clone https://github.com/pressly/goose /tmp/goose \
     && cd /tmp/goose \
@@ -23,6 +23,7 @@ WORKDIR /order-service
 
 COPY --from=builder /order-service/order-service .
 COPY --from=builder /order-service/goose .
+COPY public ./public
 COPY db/migrations ./migrations
 
 COPY .env .

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Order Management Dashboard</title>
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="dashboard">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <a href="#" class="logo">
+        <div class="logo-icon">📦</div>
+        <span>OrderHub</span>
+      </a>
+    </div>
+  </aside> 
+
+  <main class="main-content">
+    <header class="header">
+      <div class="header-left">
+        <h1>Order Management</h1>
+        <div class="breadcrumb">Dashboard / Orders / View Order</div>
+      </div>
+      
+      <div class="header-right">
+        <div class="search-container">
+          <input type="text" id="orderIdInput" class="search-input" placeholder="Enter Order UID to search...">
+          <button id="searchBtn" class="btn btn-primary">🔍 Search</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="content">
+      <div id="orderDisplay">
+        <div class="empty-state">
+          <div style="font-size: 48px; margin-bottom: 1rem;">📋</div>
+          <h3>No Order Selected</h3>
+          <p>Enter an Order UID in the search box above to view order details.</p>
+          <br>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/static/js/script.js" defer></script>
