@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	_ "order-service/docs"
 	"order-service/internal/controller/http/dto"
 	"order-service/internal/domain"
 	"order-service/internal/infra/repo"
 	"order-service/internal/usecase"
 
 	"github.com/go-chi/chi/v5"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 type HTTPHandler struct {
@@ -21,9 +23,27 @@ func NewHTTPHandler(service *usecase.OrderUseCase) *HTTPHandler {
 }
 
 func (h *HTTPHandler) RegisterRoutes(r *chi.Mux) {
-	r.Get("/order/{uid}", h.GetOrderHandler)
+	r.Get("/api/v1/order/{uid}", h.GetOrderHandler)
 }
 
+func (h *HTTPHandler) RegisterStaticRoutes(r *chi.Mux) {
+	fileServer := http.FileServer(http.Dir("public"))
+	r.Handle("/api/v1/swagger/*", httpSwagger.WrapHandler)
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "public/index.html")
+	})
+	r.Handle("/static/*", http.StripPrefix("/static/", fileServer))
+}
+
+// GetOrderHandler @Summary Get order
+// @Description Get order by UID
+// @Tags orders
+// @Param uid path string true "Order UID"
+// @Success 200 {object} dto.OrderResponse
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 404 {object} dto.ErrorResponse
+// @Failure 500 {object} dto.ErrorResponse
+// @Router /orders/{uid} [get]
 func (h *HTTPHandler) GetOrderHandler(w http.ResponseWriter, r *http.Request) {
 	uid := chi.URLParam(r, "uid")
 	if uid == "" {
@@ -34,16 +54,26 @@ func (h *HTTPHandler) GetOrderHandler(w http.ResponseWriter, r *http.Request) {
 
 	order, err := h.service.GetOrder(r.Context(), uid)
 	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
 		switch {
 		case errors.Is(err, domain.ErrInvalidState):
-
-			http.Error(w, "invalid state", http.StatusBadRequest)
+			w.WriteHeader(http.StatusBadRequest)
+			err := json.NewEncoder(w).Encode(dto.ErrorResponse{Code: http.StatusBadRequest, Message: "invalid state"})
+			if err != nil {
+				return
+			}
 		case errors.Is(err, repo.ErrNotFound):
-
-			http.Error(w, err.Error(), http.StatusNotFound)
+			w.WriteHeader(http.StatusNotFound)
+			err := json.NewEncoder(w).Encode(dto.ErrorResponse{Code: http.StatusNotFound, Message: err.Error()})
+			if err != nil {
+				return
+			}
 		default:
-
-			http.Error(w, "internal server error", http.StatusInternalServerError)
+			w.WriteHeader(http.StatusInternalServerError)
+			err := json.NewEncoder(w).Encode(dto.ErrorResponse{Code: http.StatusInternalServerError, Message: "internal server error"})
+			if err != nil {
+				return
+			}
 		}
 
 		return

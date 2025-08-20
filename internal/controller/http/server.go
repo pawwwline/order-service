@@ -54,8 +54,11 @@ func (s *Server) Shutdown(ctx context.Context) error {
 
 func (s *Server) Routes() http.Handler {
 	r := chi.NewRouter()
+
 	r.Use(mid.RequestLogger(s.logger))
 	r.Use(middleware.Recoverer)
+	s.httpHandler.RegisterStaticRoutes(r)
+	
 	s.httpHandler.RegisterRoutes(r)
 
 	return r
