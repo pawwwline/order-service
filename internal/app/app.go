@@ -74,7 +74,7 @@ func buildUseCase(db *postgres.PostgresDB, cache *cache.LRUCache) *usecase.Order
 
 func buildBroker(cfg *config.KafkaConfig, uc *usecase.OrderUseCase, logger *slog.Logger) *broker.Broker {
 	processor := handler.NewMessageProcessor(uc, logger)
-	retry := retry.NewRetry(cfg)
+	retry := retry.NewRetry(*cfg)
 	consumer := kafka.NewKafkaConsumer(cfg, processor, retry, logger)
 	return broker.NewBroker(consumer)
 }
@@ -87,12 +87,14 @@ func (a *App) Run(ctx context.Context) error {
 	if err := a.usecase.LoadOrdersCache(ctx, 1000); err != nil {
 		return err
 	}
+	a.logger.Info("orders cache loaded")
 
 	go func() {
 		a.httpServer.Run()
 	}()
-
-	a.broker.Run(ctx)
+	go func() {
+		a.broker.Run(ctx)
+	}()
 
 	return nil
 }
@@ -103,17 +105,21 @@ func (a *App) Shutdown(ctx context.Context) error {
 	if err := a.httpServer.Shutdown(ctx); err != nil {
 		errList = append(errList, err)
 	}
+	a.logger.Info("http server shutdown")
 
 	if err := a.broker.Shutdown(); err != nil {
 		errList = append(errList, err)
 	}
+	a.logger.Info("broker shutdown")
 
 	if err := a.db.Close(); err != nil {
 		errList = append(errList, err)
 	}
+	a.logger.Info("db shutdown")
 
 	if len(errList) > 0 {
 		return fmt.Errorf("shutdown errors: %v", errList)
 	}
+
 	return nil
 }
