@@ -36,6 +36,7 @@ func (c *OrderUseCase) CreateOrder(ctx context.Context, params domain.OrderParam
 	}
 
 	c.cache.Set(order)
+
 	return nil
 
 }
@@ -58,6 +59,7 @@ func (c *OrderUseCase) GetOrder(ctx context.Context, uid string) (*domain.Order,
 		return nil, err
 	}
 	c.cache.Set(order)
+
 	return order, nil
 }
 
@@ -69,6 +71,7 @@ func (c *OrderUseCase) LoadOrdersCache(ctx context.Context, limit int) error {
 	for _, order := range orders {
 		c.cache.Set(order)
 	}
+
 	return nil
 
 }
@@ -85,5 +88,6 @@ func (c *OrderUseCase) checkIdempotency(uid string) error {
 	if exists {
 		return ErrIdempotencyKeyExists
 	}
+
 	return nil
 }

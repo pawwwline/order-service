@@ -62,7 +62,12 @@ func (kc *KafkaConsumer) Init() error {
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+	defer func(conn *kafka.Conn) {
+		err := conn.Close()
+		if err != nil {
+			kc.logger.Error("failed to close connection", "error", err)
+		}
+	}(conn)
 
 	topics := []struct {
 		topic string
@@ -143,8 +148,10 @@ func (kc *KafkaConsumer) ReadOrderMsg(ctx context.Context) error {
 			kc.logger.Error("failed to write to dead letter queue", "error", err, "uid", order.OrderUID)
 		}
 		kc.logger.Debug("written to dlq", "uid", order.OrderUID)
+
 		return nil
 	}
+
 	return nil
 
 }
