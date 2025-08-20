@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
-
 	"github.com/pressly/goose/v3"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
@@ -101,7 +100,7 @@ func TestMigrationWithDB(t *testing.T) {
 		}
 
 		var exists bool
-		err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE table_name='users')").Scan(&exists)
+		err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE table_name='orders')").Scan(&exists)
 		if err != nil {
 			t.Fatalf("failed to check table after rollback: %s", err)
 		}
