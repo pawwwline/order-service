@@ -9,45 +9,35 @@ import (
 )
 
 type Retry struct {
-	maxAttempts        int
-	backoffDurationMin int
-	backoffDurationMax int
+	maxAttempts int
+	backoffMin  time.Duration
+	backoffMax  time.Duration
 }
 
-func NewRetry(cfg *config.KafkaConfig) *Retry {
+func NewRetry(cfg config.KafkaConfig) *Retry {
 	return &Retry{
-		maxAttempts:        cfg.RetryMaxAttempts,
-		backoffDurationMin: cfg.BackoffDurationMin,
-		backoffDurationMax: cfg.BackoffDurationMax,
+		maxAttempts: cfg.RetryMaxAttempts,
+		backoffMin:  time.Duration(cfg.BackoffDurationMin) * time.Second,
+		backoffMax:  time.Duration(cfg.BackoffDurationMax) * time.Second,
 	}
 }
 
-func (r *Retry) MaxAttempts() int {
-	return r.maxAttempts
-}
-
-func (r *Retry) BackoffDurationMin() time.Duration {
-	return time.Duration(r.backoffDurationMin)
-}
-
-// exponential backoff logic
 func (r *Retry) BackoffDuration(attempt int) time.Duration {
 	if attempt < 1 {
 		return 0
 	}
 
-	backoff := r.backoffDurationMin * (1 << (attempt - 1))
-	if backoff > r.backoffDurationMax {
-		backoff = r.backoffDurationMax
+	backoff := r.backoffMin * (1 << (attempt - 1))
+	if backoff > r.backoffMax {
+		backoff = r.backoffMax
 	}
 
-	// adding jitter to avoid thundering herd problem
-	jitter := rand.Int63n(int64(backoff)/2) - int64(backoff)/4
-
-	return time.Duration(int64(backoff)+jitter) * time.Millisecond
+	jitter := time.Duration(rand.Int63n(int64(backoff)/2) - int64(backoff)/4)
+	return backoff + jitter
 }
 
-// decorator for retry logic
+// decorator for retry logic.
+
 func (r *Retry) RetryWrapper(ctx context.Context, fn func() handler.Result) handler.Result {
 	var res handler.Result
 	for attempt := 1; attempt <= r.maxAttempts; attempt++ {
@@ -71,5 +61,6 @@ func (r *Retry) RetryWrapper(ctx context.Context, fn func() handler.Result) hand
 			}
 		}
 	}
+
 	return res
 }

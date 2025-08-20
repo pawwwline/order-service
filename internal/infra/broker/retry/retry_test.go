@@ -10,10 +10,10 @@ import (
 )
 
 func TestRetryWrapperResults(t *testing.T) {
-	retry := NewRetry(&config.KafkaConfig{
+	retry := NewRetry(config.KafkaConfig{
 		RetryMaxAttempts:   5,
-		BackoffDurationMin: 10,
-		BackoffDurationMax: 100,
+		BackoffDurationMin: 1,
+		BackoffDurationMax: 4,
 	})
 	ctx := context.Background()
 
@@ -24,7 +24,7 @@ func TestRetryWrapperResults(t *testing.T) {
 			return handler.Retry
 		})
 		assert.Equal(t, handler.Retry, res)
-		assert.Equal(t, retry.MaxAttempts(), attempts)
+		assert.Equal(t, retry.maxAttempts, attempts)
 	})
 
 	t.Run("success first try", func(t *testing.T) {
@@ -41,13 +41,13 @@ func TestRetryWrapperResults(t *testing.T) {
 		attempts := 0
 		res := retry.RetryWrapper(ctx, func() handler.Result {
 			attempts++
-			if attempts < retry.MaxAttempts() {
+			if attempts < retry.maxAttempts {
 				return handler.Retry
 			}
 			return handler.Success
 		})
 		assert.Equal(t, handler.Success, res)
-		assert.Equal(t, retry.MaxAttempts(), attempts)
+		assert.Equal(t, retry.maxAttempts, attempts)
 	})
 
 	t.Run("DLQ returned immediately", func(t *testing.T) {
