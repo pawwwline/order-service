@@ -7,7 +7,7 @@ import (
 
 func (p *PostgresDB) getOrderItems(ctx context.Context, orderId int) ([]*domain.Item, error) {
 	var items []*domain.Item
-	rows, err := p.db.QueryContext(ctx, `SELECT chrt_id, track_number, price, rid, name, sale, size, total_price, nm_id, brand, status FROM items WHERE order_id = $1`, orderId)
+	rows, err := p.db.QueryContext(ctx, `SELECT chrt_id, track_number, price, rid, name, sale, size, total_price, nm_id, brand, status FROM order_items WHERE order_id = $1`, orderId)
 	if err != nil {
 		return nil, err
 	}
@@ -30,7 +30,7 @@ func (p *PostgresDB) getItemsByOrderIds(ctx context.Context, orderIdArr []int) (
 	query := `
     SELECT order_id, chrt_id, track_number, price, rid, name, sale, size,
            total_price, nm_id, brand, status
-    FROM items
+    FROM order_items
     WHERE order_id = ANY($1)
 `
 	rows, err := p.db.QueryContext(ctx, query, orderIdArr)

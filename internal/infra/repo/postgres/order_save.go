@@ -53,13 +53,14 @@ func (p *PostgresDB) saveDeliveryTx(ctx context.Context, tx *sql.Tx, orderId int
 
 func (p *PostgresDB) savePaymentsTx(ctx context.Context, tx *sql.Tx, orderId int, payment *domain.Payment) error {
 	insertPaymentQuery := `INSERT INTO payments
-	(order_id, transaction, request_id, provider, amount, payment_dt, bank, delivery_cost, goods_total, custom_fee)
-	VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`
+	(order_id, transaction, request_id, currency, provider, amount, payment_dt, bank, delivery_cost, goods_total, custom_fee)
+	VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`
 
 	_, err := tx.ExecContext(ctx, insertPaymentQuery,
 		orderId,
 		payment.Transaction,
 		payment.RequestID,
+		payment.Currency,
 		payment.Provider,
 		payment.Amount,
 		payment.PaymentDt,
@@ -102,5 +103,6 @@ func (p *PostgresDB) saveItemsTx(ctx context.Context, tx *sql.Tx, orderId int, i
 			return err
 		}
 	}
+
 	return nil
 }
