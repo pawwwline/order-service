@@ -16,16 +16,16 @@ type Payment struct {
 }
 
 type PaymentParams struct {
-	Transaction  string
-	RequestID    string
-	Currency     string
-	Provider     string
-	Amount       int
-	PaymentDt    int
-	Bank         string
-	DeliveryCost int
-	GoodsTotal   int
-	CustomFee    int
+	Transaction  string `json:"transaction"`
+	RequestID    string `json:"request_id"`
+	Currency     string `json:"currency"`
+	Provider     string `json:"provider"`
+	Amount       int    `json:"amount"`
+	PaymentDt    int    `json:"payment_dt"`
+	Bank         string `json:"bank"`
+	DeliveryCost int    `json:"delivery_cost"`
+	GoodsTotal   int    `json:"goods_total"`
+	CustomFee    int    `json:"custom_fee"`
 }
 
 func NewPayment(params PaymentParams) (*Payment, error) {
@@ -54,7 +54,6 @@ func validatePaymentParams(p PaymentParams) error {
 	if p.Currency == "" {
 		return fmt.Errorf("currency %w", ErrInvalidState)
 	}
-
 	if p.Amount < 0 {
 		return fmt.Errorf("amount is below zero: %w", ErrInvalidState)
 	}

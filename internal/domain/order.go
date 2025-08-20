@@ -29,20 +29,20 @@ type Order struct {
 }
 
 type OrderParams struct {
-	OrderUID          string
-	TrackNumber       string
-	Entry             string
-	Delivery          DeliveryParams
-	Payment           PaymentParams
-	Items             []ItemParams
-	Locale            string
-	InternalSignature string
-	CustomerID        string
-	DeliveryService   string
-	Shardkey          string
-	SmID              int
-	DateCreated       time.Time
-	OofShard          string
+	OrderUID          string         `json:"order_uid"`
+	TrackNumber       string         `json:"track_number"`
+	Entry             string         `json:"entry"`
+	Delivery          DeliveryParams `json:"delivery"`
+	Payment           PaymentParams  `json:"payment"`
+	Items             []ItemParams   `json:"items"`
+	Locale            string         `json:"locale"`
+	InternalSignature string         `json:"internal_signature"`
+	CustomerID        string         `json:"customer_id"`
+	DeliveryService   string         `json:"delivery_service"`
+	Shardkey          string         `json:"shardkey"`
+	SmID              int            `json:"sm_id"`
+	DateCreated       time.Time      `json:"date_created"`
+	OofShard          string         `json:"oof_shard"`
 }
 
 func NewOrder(p OrderParams) (*Order, error) {

@@ -17,17 +17,17 @@ type Item struct {
 }
 
 type ItemParams struct {
-	ChrtID      int
-	TrackNumber string
-	Price       int
-	Rid         string
-	Name        string
-	Sale        int
-	Size        string
-	TotalPrice  int
-	NmID        int
-	Brand       string
-	Status      int
+	ChrtID      int    `json:"chrt_id"`
+	TrackNumber string `json:"track_number"`
+	Price       int    `json:"price"`
+	Rid         string `json:"rid"`
+	Name        string `json:"name"`
+	Sale        int    `json:"sale"`
+	Size        string `json:"size"`
+	TotalPrice  int    `json:"total_price"`
+	NmID        int    `json:"nm_id"`
+	Brand       string `json:"brand"`
+	Status      int    `json:"status"`
 }
 
 func NewItem(p ItemParams) (*Item, error) {
