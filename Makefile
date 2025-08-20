@@ -18,12 +18,13 @@ migrate-down:
 run:
 	@docker compose up -d zookeeper kafka postgres
 	@$(MAKE) migrate-up
+	@docker compose up app
 
 down:
 	@docker compose down --volumes --remove-orphans
 
 logs:
-	@docker compose logs -f app
+	@docker compose logs -it -f app
 
 demo:
 	@docker build -t kafka-producer ./demo-producer
