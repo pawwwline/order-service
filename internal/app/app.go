@@ -76,7 +76,7 @@ func buildBroker(cfg *config.KafkaConfig, uc *usecase.OrderUseCase, logger *slog
 	processor := handler.NewMessageProcessor(uc, logger)
 	retry := retry.NewRetry(*cfg)
 	consumer := kafka.NewKafkaConsumer(cfg, processor, retry, logger)
-	return broker.NewBroker(consumer)
+	return broker.NewBroker(consumer, logger)
 }
 
 func buildHTTP(cfg *config.HTTPConfig, uc *usecase.OrderUseCase, logger *slog.Logger) *server.Server {

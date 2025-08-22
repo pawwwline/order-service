@@ -158,7 +158,7 @@ async function searchOrder() {
 
 
   try {
-    const response = await fetch(`http://localhost:8080/api/v1/order/${encodeURIComponent(uid)}`);
+    const response = await fetch(`/api/v1/order/${encodeURIComponent(uid)}`);
     console.log("Response status:", response.status); 
 
     if (!response.ok) {
